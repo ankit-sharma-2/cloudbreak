@@ -1,5 +1,9 @@
 package com.sequenceiq.cloudbreak.service.stack;
 
+import static com.sequenceiq.cloudbreak.api.endpoint.v4.stacks.base.InstanceStatus.DELETED_BY_PROVIDER;
+import static com.sequenceiq.cloudbreak.api.endpoint.v4.stacks.base.InstanceStatus.DELETED_ON_PROVIDER_SIDE;
+import static com.sequenceiq.cloudbreak.api.endpoint.v4.stacks.base.InstanceStatus.SERVICES_UNHEALTHY;
+import static com.sequenceiq.cloudbreak.api.endpoint.v4.stacks.base.InstanceStatus.TERMINATED;
 import static com.sequenceiq.cloudbreak.cloud.model.CloudResource.ATTRIBUTES;
 import static com.sequenceiq.cloudbreak.util.Benchmark.measure;
 
@@ -74,6 +78,22 @@ public class InstanceMetaDataService {
             transactionService.requiresNew(() -> {
                 int modifiedRows = repository.updateStatusIfNotTerminated(instanceMetaData.getId(), newStatus, statusReason);
                 LOGGER.debug("{} row was updated", modifiedRows);
+                return modifiedRows;
+            });
+        } catch (TransactionService.TransactionExecutionException e) {
+            LOGGER.error("Can't update instance status", e);
+            throw new TransactionService.TransactionRuntimeExecutionException(e);
+        }
+    }
+
+    public void updateAllInstanceStatus(Long stackId, com.sequenceiq.cloudbreak.api.endpoint.v4.stacks.base.InstanceStatus newStatus,
+            String statusReason) {
+        try {
+            LOGGER.info("Update every instance in stack ({}) status to {} with statusReason {}", stackId, newStatus, statusReason);
+            transactionService.requiresNew(() -> {
+                List<Long> ids = repository.findIdsNotInStatusForStack(stackId, TERMINATED, DELETED_BY_PROVIDER, DELETED_ON_PROVIDER_SIDE, SERVICES_UNHEALTHY);
+                int modifiedRows = repository.updateAllStatusIfNotTerminated(ids, newStatus, statusReason);
+                LOGGER.debug("{} instancemetadata row was updated, ids count: {}", modifiedRows, ids.size());
                 return modifiedRows;
             });
         } catch (TransactionService.TransactionExecutionException e) {

@@ -35,6 +35,11 @@ public interface InstanceMetaDataRepository extends CrudRepository<InstanceMetaD
             "AND i.instanceStatus <> 'DELETED_BY_PROVIDER'")
     Set<InstanceMetaData> findNotTerminatedForStack(@Param("stackId") Long stackId);
 
+    @Query("SELECT distinct i.id FROM InstanceMetaData i JOIN i.instanceGroup ig JOIN ig.stack s " +
+            "WHERE i.instanceGroup.stack.id= :stackId " +
+            "AND i.instanceStatus NOT IN (:status)")
+    List<Long> findIdsNotInStatusForStack(@Param("stackId") Long stackId, @Param("status") InstanceStatus... status);
+
     @Query("SELECT i FROM InstanceMetaData i " +
             "WHERE i.instanceGroup.stack.id= :stackId " +
             "AND i.instanceStatus <> 'TERMINATED' " +
@@ -135,5 +140,12 @@ public interface InstanceMetaDataRepository extends CrudRepository<InstanceMetaD
             "WHERE id = :id AND instanceStatus <> 'TERMINATED'")
     int updateStatusIfNotTerminated(@Param("id") Long id, @Param("newInstanceStatus") InstanceStatus newInstanceStatus,
             @Param("newStatusReason") String newStatusReason);
+
+    @Modifying
+    @Query("UPDATE InstanceMetaData SET instanceStatus = :newInstanceStatus, statusReason = :newStatusReason " +
+            "WHERE id IN (:ids) AND instanceStatus <> 'TERMINATED'")
+    int updateAllStatusIfNotTerminated(@Param("ids") List<Long> ids, @Param("newInstanceStatus") InstanceStatus newInstanceStatus,
+            @Param("newStatusReason") String newStatusReason);
+
 
 }

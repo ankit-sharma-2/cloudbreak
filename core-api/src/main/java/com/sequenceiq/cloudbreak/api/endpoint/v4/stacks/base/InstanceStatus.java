@@ -15,7 +15,8 @@ public enum InstanceStatus {
     DELETE_REQUESTED,
     DECOMMISSIONED,
     DECOMMISSION_FAILED,
-    TERMINATED;
+    TERMINATED,
+    UNREACHABLE;
 
     public String getAsHostState() {
         switch (this) {
@@ -30,6 +31,8 @@ public enum InstanceStatus {
                 return "WAITING_FOR_REPAIR";
             case SERVICES_RUNNING:
                 return "RUNNING";
+            case UNREACHABLE:
+                return "UNREACHABLE";
             default:
                 return "UNKNOWN";
         }

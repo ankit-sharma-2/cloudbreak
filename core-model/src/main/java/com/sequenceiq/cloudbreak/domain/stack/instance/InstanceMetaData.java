@@ -237,7 +237,8 @@ public class InstanceMetaData implements ProvisionEntity {
                 && !isDeletedOnProvider()
                 && !InstanceStatus.ORCHESTRATION_FAILED.equals(instanceStatus)
                 && !InstanceStatus.FAILED.equals(instanceStatus)
-                && !InstanceStatus.STOPPED.equals(instanceStatus);
+                && !InstanceStatus.STOPPED.equals(instanceStatus)
+                && !InstanceStatus.UNREACHABLE.equals(instanceStatus);
     }
 
     public boolean isDeletedOnProvider() {
@@ -260,7 +261,7 @@ public class InstanceMetaData implements ProvisionEntity {
 
     public boolean isAttached() {
         return InstanceStatus.SERVICES_HEALTHY.equals(instanceStatus) || InstanceStatus.SERVICES_UNHEALTHY.equals(instanceStatus)
-                || InstanceStatus.DECOMMISSION_FAILED.equals(instanceStatus);
+                || InstanceStatus.DECOMMISSION_FAILED.equals(instanceStatus) || InstanceStatus.UNREACHABLE.equals(instanceStatus);
     }
 
     public boolean isGateway() {
