@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import com.sequenceiq.cloudbreak.service.CustomConfigsService;
+import com.sequenceiq.cloudbreak.template.views.CustomConfigPropertyView;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -50,6 +52,7 @@ import com.sequenceiq.cloudbreak.template.filesystem.StorageLocationView;
 import com.sequenceiq.cloudbreak.template.filesystem.s3.S3FileSystemConfigurationsView;
 import com.sequenceiq.cloudbreak.template.model.GeneralClusterConfigs;
 import com.sequenceiq.cloudbreak.template.views.BlueprintView;
+import com.sequenceiq.cloudbreak.template.views.CustomConfigsView;
 import com.sequenceiq.cloudbreak.template.views.GatewayView;
 import com.sequenceiq.cloudbreak.template.views.HostgroupView;
 import com.sequenceiq.cloudbreak.template.views.ProductDetailsView;
@@ -81,6 +84,9 @@ public class CentralCmTemplateUpdaterTest {
     private CmTemplateConfigInjectorProcessor cmTemplateConfigInjectorProcessor;
 
     @Spy
+    private CustomConfigsInjectorProcessor customConfigsInjectorProcessor;
+
+    @Spy
     private CmHostGroupRoleConfigProviderProcessor cmHostGroupRoleConfigProviderProcessor;
 
     @Mock
@@ -88,6 +94,9 @@ public class CentralCmTemplateUpdaterTest {
 
     @Mock
     private BlueprintView blueprintView;
+
+    @Mock
+    private CustomConfigsView customConfigsView;
 
     @Mock
     private S3ConfigProvider s3ConfigProvider;
@@ -117,6 +126,7 @@ public class CentralCmTemplateUpdaterTest {
         RDSConfig rdsConfig = TestUtil.rdsConfig(DatabaseType.HIVE);
         when(templatePreparationObject.getRdsConfigs()).thenReturn(Set.of(rdsConfig));
         when(templatePreparationObject.getRdsConfig(DatabaseType.HIVE)).thenReturn(rdsConfig);
+        when(templatePreparationObject.getCustomConfigs()).thenReturn(Optional.of(customConfigsView));
 
         List<StorageLocationView> locations = new ArrayList<>();
         StorageLocation hbaseRootDir = new StorageLocation();
@@ -136,6 +146,7 @@ public class CentralCmTemplateUpdaterTest {
         ReflectionTestUtils.setField(cmTemplateComponentConfigProviderProcessor, "providers", cmTemplateComponentConfigProviders);
         ReflectionTestUtils.setField(cmTemplateConfigInjectorProcessor, "injectors", List.of());
         ReflectionTestUtils.setField(cmHostGroupRoleConfigProviderProcessor, "providers", List.of());
+        ReflectionTestUtils.setField(customConfigsInjectorProcessor, "customConfigsService", new CustomConfigsService());
     }
 
     private static Set<HostgroupView> toHostgroupViews(Map<String, List<Map<String, String>>> hostgroupMappings) {
@@ -185,6 +196,23 @@ public class CentralCmTemplateUpdaterTest {
                 return roleConfigs;
             }
         }));
+        when(blueprintView.getBlueprintText()).thenReturn(getBlueprintText("input/namenode-ha.bp"));
+        ApiClusterTemplate generated = generator.getCmTemplate(templatePreparationObject, getHostgroupMappings(), clouderaManagerRepo, null, null);
+        assertMatchesBlueprintAtPath("output/namenode-ha-injected.bp", generated);
+    }
+
+    @Test
+    public void customConfigsAreInjected() {
+        when(customConfigsView.getConfigurations()).thenReturn(Set.of(
+                new CustomConfigPropertyView("service_config_name", "service_config_value", null, "zookeeper"),
+                new CustomConfigPropertyView("service_config_name", "service_config_value", null, "hdfs"),
+                new CustomConfigPropertyView("role_config_name", "role_config_value", "server", "zookeeper"),
+                new CustomConfigPropertyView("role_config_name", "role_config_value", "namenode", "hdfs"),
+                new CustomConfigPropertyView("role_config_name", "role_config_value", "datanode", "hdfs"),
+                new CustomConfigPropertyView("role_config_name", "role_config_value", "journalnode", "hdfs"),
+                new CustomConfigPropertyView("role_config_name", "role_config_value", "failovercontroller", "hdfs"),
+                new CustomConfigPropertyView("role_config_name", "role_config_value", "balancer", "hdfs")
+        ));
         when(blueprintView.getBlueprintText()).thenReturn(getBlueprintText("input/namenode-ha.bp"));
         ApiClusterTemplate generated = generator.getCmTemplate(templatePreparationObject, getHostgroupMappings(), clouderaManagerRepo, null, null);
         assertMatchesBlueprintAtPath("output/namenode-ha-injected.bp", generated);

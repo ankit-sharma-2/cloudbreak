@@ -14,6 +14,7 @@ import java.util.function.Function;
 
 import javax.inject.Inject;
 
+import com.sequenceiq.cloudbreak.service.CustomConfigsService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +62,9 @@ public class ClusterV4RequestToClusterConverter extends AbstractConversionServic
     private BlueprintService blueprintService;
 
     @Inject
+    private CustomConfigsService customConfigsService;
+
+    @Inject
     private WorkspaceService workspaceService;
 
     @Inject
@@ -81,6 +85,7 @@ public class ClusterV4RequestToClusterConverter extends AbstractConversionServic
         cluster.setExecutorType(source.getExecutorType());
         cluster.setDatabaseServerCrn(source.getDatabaseServerCrn());
         cluster.setBlueprint(getBlueprint(source.getBlueprintName(), workspace));
+        cluster.setCustomConfigurationsCrn(getCustomConfigurationsCrn(source.getCustomConfigurationsName()));
         convertGateway(source, cluster);
         if (cloudStorageValidationUtil.isCloudStorageConfigured(source.getCloudStorage())) {
             FileSystem fileSystem = cloudStorageConverter.requestToFileSystem(source.getCloudStorage());
@@ -198,6 +203,14 @@ public class ClusterV4RequestToClusterConverter extends AbstractConversionServic
             }
         }
         return blueprint;
+    }
+
+    private String getCustomConfigurationsCrn(String customConfigurationsName) {
+        String customConfigurationsCrn = null;
+        if (!StringUtils.isEmpty(customConfigurationsName)) {
+            customConfigurationsCrn = customConfigsService.getResourceCrnByResourceName(customConfigurationsName);
+        }
+        return customConfigurationsCrn;
     }
 
     private void updateDatabases(ClusterV4Request source, Cluster cluster, Workspace workspace) {

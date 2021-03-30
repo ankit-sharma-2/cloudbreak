@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import com.sequenceiq.cloudbreak.api.endpoint.v4.dto.NameOrCrn;
+import com.sequenceiq.cloudbreak.service.CustomConfigsService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +65,9 @@ public class ClusterToClusterV4ResponseConverter extends AbstractConversionServi
     private ProxyConfigDtoService proxyConfigDtoService;
 
     @Inject
+    private CustomConfigsService customConfigsService;
+
+    @Inject
     private CloudStorageConverter cloudStorageConverter;
 
     @Value("${cb.disable.show.blueprint:false}")
@@ -86,6 +91,7 @@ public class ClusterToClusterV4ResponseConverter extends AbstractConversionServi
         convertContainerConfig(source, clusterResponse);
         clusterResponse.setCreationFinished(source.getCreationFinished());
         decorateResponseWithProxyConfig(source, clusterResponse);
+        decorateResponseWithCustomConfigurations(source, clusterResponse);
         clusterResponse.setCloudStorage(getCloudStorage(source));
         clusterResponse.setCm(ClusterToClouderaManagerV4ResponseConverter.convert(source));
         clusterResponse.setDatabases(converterUtil.convertAll(source.getRdsConfigs().stream().filter(
@@ -191,6 +197,14 @@ public class ClusterToClusterV4ResponseConverter extends AbstractConversionServi
         if (StringUtils.isNotEmpty(proxyConfigCrn)) {
             clusterResponse.setProxyConfigCrn(proxyConfigCrn);
             clusterResponse.setProxyConfigName(proxyConfigDtoService.getByCrn(proxyConfigCrn).getName());
+        }
+    }
+
+    private void decorateResponseWithCustomConfigurations(Cluster source, ClusterV4Response clusterResponse) {
+        String customConfigurationsCrn = source.getCustomConfigurationsCrn();
+        if (StringUtils.isNotEmpty(customConfigurationsCrn)) {
+            clusterResponse.setCustomConfigurationsCrn(customConfigurationsCrn);
+            clusterResponse.setCustomConfigurationsName(customConfigsService.getByNameOrCrn(NameOrCrn.ofCrn(customConfigurationsCrn)).getName());
         }
     }
 

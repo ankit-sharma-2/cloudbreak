@@ -22,6 +22,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import com.sequenceiq.cloudbreak.api.endpoint.v4.dto.NameOrCrn;
+import com.sequenceiq.cloudbreak.domain.CustomConfigs;
+import com.sequenceiq.cloudbreak.service.CustomConfigsService;
+import com.sequenceiq.cloudbreak.service.customconfigs.CustomConfigsViewProvider;
+import com.sequenceiq.cloudbreak.service.datalake.SdxClientService;
+import com.sequenceiq.cloudbreak.template.views.CustomConfigsView;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -145,6 +151,9 @@ public class StackToTemplatePreparationObjectConverterTest {
     private PostgresConfigService postgresConfigService;
 
     @Mock
+    private SdxClientService sdxClientService;
+
+    @Mock
     private RedbeamsDbCertificateProvider dbCertificateProvider;
 
     @Mock
@@ -155,6 +164,9 @@ public class StackToTemplatePreparationObjectConverterTest {
 
     @Mock
     private GeneralClusterConfigsProvider generalClusterConfigsProvider;
+
+    @Mock
+    private CustomConfigsViewProvider customConfigsViewProvider;
 
     @Mock
     private Stack stackMock;
@@ -187,6 +199,9 @@ public class StackToTemplatePreparationObjectConverterTest {
     private LdapConfigService ldapConfigService;
 
     @Mock
+    private CustomConfigsService customConfigsService;
+
+    @Mock
     private KerberosConfigService kerberosConfigService;
 
     @Mock
@@ -212,6 +227,9 @@ public class StackToTemplatePreparationObjectConverterTest {
 
     @Mock
     private StackUtil stackUtil;
+
+    @Mock
+    private CustomConfigs customConfigs;
 
     @Mock
     private VirtualGroupService virtualGroupService;
@@ -287,6 +305,7 @@ public class StackToTemplatePreparationObjectConverterTest {
         when(stackInputs.get(StackInputs.class)).thenReturn(null);
         when(stackMock.getEnvironmentCrn()).thenReturn(TestConstants.CRN);
         when(stackMock.getCluster()).thenReturn(sourceCluster);
+        when(sourceCluster.getCustomConfigurationsCrn()).thenReturn("test-custom-configs-crn");
         when(stackMock.getResourceCrn()).thenReturn("crn:cdp:datahub:us-west-1:account:cluster:cluster");
         when(accountTagClientService.list()).thenReturn(new HashMap<>());
         when(entitlementService.internalTenant(anyString())).thenReturn(true);
@@ -308,6 +327,7 @@ public class StackToTemplatePreparationObjectConverterTest {
         when(awsMockAccountMappingService.getUserMappings(REGION, cloudCredential)).thenReturn(MOCK_USER_MAPPINGS);
         when(ldapConfigService.get(anyString(), anyString())).thenReturn(Optional.empty());
         when(clusterService.getById(anyLong())).thenReturn(cluster);
+        when(customConfigsService.getByNameOrCrn(any(NameOrCrn.class))).thenReturn(customConfigs);
         when(exposedServiceCollector.getAllKnoxExposed()).thenReturn(Set.of());
         when(resourceService.getAllByStackId(anyLong())).thenReturn(Collections.EMPTY_LIST);
         IdBroker idbroker = idBrokerConverterUtil.generateIdBrokerSignKeys(cluster);
@@ -429,6 +449,26 @@ public class StackToTemplatePreparationObjectConverterTest {
         TemplatePreparationObject result = underTest.convert(stackMock);
 
         assertThat(result.getGeneralClusterConfigs()).isEqualTo(expected);
+    }
+
+    @Test
+    public void testConvertWhenCustomConfigsProvidedThenItShouldBeInvoked() {
+        CustomConfigsView expected = mock(CustomConfigsView.class);
+        when(customConfigsViewProvider.getCustomConfigsView(customConfigs)).thenReturn(expected);
+        when(stackMock.getType()).thenReturn(StackType.WORKLOAD);
+
+        TemplatePreparationObject result = underTest.convert(stackMock);
+
+        assertThat(result.getCustomConfigs().isPresent()).isTrue();
+        assertThat(result.getCustomConfigs()).isEqualTo(Optional.of(expected));
+        verify(customConfigsViewProvider, times(1)).getCustomConfigsView(customConfigs);
+    }
+
+    @Test
+    public void testConvertWhenClusterHasNoCustomConfigsThenOptionalShouldBeEmpty() {
+        TemplatePreparationObject result = underTest.convert(stackMock);
+
+        assertThat(result.getCustomConfigs().isPresent()).isFalse();
     }
 
     @Test

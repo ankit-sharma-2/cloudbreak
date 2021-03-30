@@ -14,6 +14,10 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import com.sequenceiq.cloudbreak.api.endpoint.v4.dto.NameOrCrn;
+import com.sequenceiq.cloudbreak.exception.CustomConfigsException;
+import com.sequenceiq.cloudbreak.service.customconfigs.CustomConfigsViewProvider;
+import com.sequenceiq.cloudbreak.template.views.CustomConfigsView;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -52,6 +56,7 @@ import com.sequenceiq.cloudbreak.dto.credential.Credential;
 import com.sequenceiq.cloudbreak.kerberos.KerberosConfigService;
 import com.sequenceiq.cloudbreak.ldap.LdapConfigService;
 import com.sequenceiq.cloudbreak.logger.MDCUtils;
+import com.sequenceiq.cloudbreak.service.CustomConfigsService;
 import com.sequenceiq.cloudbreak.service.GatewayConfigService;
 import com.sequenceiq.cloudbreak.service.LoadBalancerConfigService;
 import com.sequenceiq.cloudbreak.service.ServiceEndpointCollector;
@@ -110,6 +115,9 @@ public class StackToTemplatePreparationObjectConverter extends AbstractConversio
     private GeneralClusterConfigsProvider generalClusterConfigsProvider;
 
     @Inject
+    private CustomConfigsViewProvider customConfigsViewProvider;
+
+    @Inject
     private BlueprintViewProvider blueprintViewProvider;
 
     @Inject
@@ -132,6 +140,9 @@ public class StackToTemplatePreparationObjectConverter extends AbstractConversio
 
     @Inject
     private GcpMockAccountMappingService gcpMockAccountMappingService;
+
+    @Inject
+    private CustomConfigsService customConfigsService;
 
     @Inject
     private CmCloudStorageConfigProvider cmCloudStorageConfigProvider;
@@ -222,6 +233,7 @@ public class StackToTemplatePreparationObjectConverter extends AbstractConversio
                     .withRdsSslCertificateFilePath(dbCertificateProvider.getSslCertsFilePath())
                     .withGateway(gateway, gatewaySignKey, exposedServiceCollector.getAllKnoxExposed())
                     .withIdBroker(idbroker)
+                    .withCustomConfigs(getCustomConfigsView(source))
                     .withCustomInputs(stackInputs.getCustomInputs() == null ? new HashMap<>() : stackInputs.getCustomInputs())
                     .withFixInputs(fixInputs)
                     .withBlueprintView(blueprintViewProvider.getBlueprintView(cluster.getBlueprint()))
@@ -306,6 +318,18 @@ public class StackToTemplatePreparationObjectConverter extends AbstractConversio
         String region = source.getRegion();
         String availabilityZone = source.getAvailabilityZone();
         builder.withPlacementView(new PlacementView(region, availabilityZone));
+    }
+
+    private CustomConfigsView getCustomConfigsView(Stack source) {
+        CustomConfigsView customConfigsView = null;
+        if (StackType.WORKLOAD.equals(source.getType()) && source.getCluster().getCustomConfigurationsCrn() != null) {
+            customConfigsView = customConfigsViewProvider.getCustomConfigsView(customConfigsService.getByNameOrCrn(NameOrCrn
+                    .ofCrn(source.getCluster().getCustomConfigurationsCrn())));
+            if (customConfigsView.getRuntimeVersion() != null && !source.getStackVersion().equals(customConfigsView.getRuntimeVersion())) {
+                throw new CustomConfigsException("CustomConfigs runtime version mismatch!");
+            }
+        }
+        return customConfigsView;
     }
 
     private void decorateBuilderWithAccountMapping(Stack source, DetailedEnvironmentResponse environment, Credential credential, Builder builder,

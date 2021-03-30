@@ -233,6 +233,8 @@ public class Cluster implements ProvisionEntity, WorkspaceAwareResource {
 
     private String databaseServerCrn;
 
+    private String customConfigurationsCrn;
+
     @Column(nullable = false)
     private Boolean autoTlsEnabled = Boolean.FALSE;
 
@@ -804,6 +806,14 @@ public class Cluster implements ProvisionEntity, WorkspaceAwareResource {
 
     public void setEmbeddedDatabaseOnAttachedDisk(Boolean embeddedDatabaseOnAttachedDisk) {
         this.embeddedDatabaseOnAttachedDisk = embeddedDatabaseOnAttachedDisk;
+    }
+
+    public String getCustomConfigurationsCrn() {
+        return customConfigurationsCrn;
+    }
+
+    public void setCustomConfigurationsCrn(String customConfigurationsCrn) {
+        this.customConfigurationsCrn = customConfigurationsCrn;
     }
 
     @Override
