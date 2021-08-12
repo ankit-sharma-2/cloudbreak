@@ -89,6 +89,11 @@ public class DatalakeBackupActions {
             @Override
             protected void doExecute(SdxContext context, DatalakeTriggerBackupEvent payload, Map<Object, Object> variables) {
                 LOGGER.info("Triggering datalake backup for {}", payload.getResourceId());
+
+                // we want to create an auditable record that the datalake backup has been started.
+                SdxCluster sdxCluster = sdxService.getById(payload.getResourceId());
+                eventSenderService.sendEventAndNotification(sdxCluster, context.getFlowTriggerUserCrn(), DATALAKE_DATABASE_BACKUP);
+
                 DatalakeDrStatusResponse backupStatusResponse =
                         sdxBackupRestoreService.triggerDatalakeBackup(payload.getResourceId(), payload.getBackupLocation(),
                                 payload.getBackupName(),
