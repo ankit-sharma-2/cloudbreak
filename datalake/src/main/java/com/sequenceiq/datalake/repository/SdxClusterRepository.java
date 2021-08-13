@@ -16,12 +16,14 @@ import org.springframework.stereotype.Repository;
 
 import com.sequenceiq.authorization.service.list.ResourceWithId;
 import com.sequenceiq.authorization.service.model.projection.ResourceCrnAndNameView;
+import com.sequenceiq.cloudbreak.workspace.repository.EntityType;
 import com.sequenceiq.common.api.type.CertExpirationState;
 import com.sequenceiq.datalake.entity.SdxCluster;
 import com.sequenceiq.datalake.projection.SdxClusterIdView;
 
 @Repository
 @Transactional(TxType.REQUIRED)
+@EntityType(entityClass = SdxCluster.class)
 public interface SdxClusterRepository extends CrudRepository<SdxCluster, Long> {
 
     @Override
