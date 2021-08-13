@@ -25,9 +25,9 @@ import com.sequenceiq.cloudbreak.common.json.JsonUtil;
 import com.sequenceiq.cloudbreak.converter.CertExpirationStateConverter;
 import com.sequenceiq.cloudbreak.converter.FileSystemTypeConverter;
 import com.sequenceiq.cloudbreak.service.secret.SecretValue;
-import com.sequenceiq.cloudbreak.service.secret.domain.AccountIdAwareResource;
 import com.sequenceiq.cloudbreak.service.secret.domain.Secret;
 import com.sequenceiq.cloudbreak.service.secret.domain.SecretToString;
+import com.sequenceiq.cloudbreak.structuredevent.repository.AccountAwareResource;
 import com.sequenceiq.common.api.type.CertExpirationState;
 import com.sequenceiq.common.model.FileSystemType;
 import com.sequenceiq.datalake.converter.SdxClusterShapeConverter;
@@ -37,7 +37,7 @@ import com.sequenceiq.sdx.api.model.SdxDatabaseAvailabilityType;
 
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"accountid", "envname"}))
-public class SdxCluster implements AccountIdAwareResource {
+public class SdxCluster implements AccountAwareResource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SdxCluster.class);
 
@@ -130,6 +130,11 @@ public class SdxCluster implements AccountIdAwareResource {
         return id;
     }
 
+    @Override
+    public String getResourceCrn() {
+        return crn;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -144,6 +149,11 @@ public class SdxCluster implements AccountIdAwareResource {
 
     public String getAccountId() {
         return accountId;
+    }
+
+    @Override
+    public String getName() {
+        return clusterName;
     }
 
     public void setAccountId(String accountId) {
