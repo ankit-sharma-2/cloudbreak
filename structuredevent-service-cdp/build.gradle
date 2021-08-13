@@ -13,7 +13,6 @@ jar {
 }
 
 dependencies {
-    implementation project(':cloud-reactor')
     implementation project(':structuredevent-model')
     implementation project(':structuredevent-api-cdp')
     implementation project(':environment-api')
