@@ -61,7 +61,7 @@ public class RepositoryBasedDataCollector {
     }
 
     /**
-     * Attaches {@code RESOURCE_ID}, {@code RESOURCE_CRN}, or {@code RESOURCE_NAME} to the provided {@code params}.
+     * Attaches {@code RESOURCE_ID}, {@code RESOURCE_CRN}, or {@code RESOURCE_NAME} to the provided {@code params} if they're missing.
      *
      * @param params should include exactly one of {@code RESOURCE_CRN} or {@code RESOURCE_NAME}
      */
