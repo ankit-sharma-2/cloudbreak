@@ -21,7 +21,6 @@ import com.sequenceiq.sdx.api.model.SdxRestoreResponse;
 import com.sequenceiq.sdx.api.model.SdxRestoreStatusResponse;
 
 @Controller
-@AccountEntityType(SdxCluster.class)
 public class SdxRestoreController implements SdxRestoreEndpoint {
 
     @Inject

@@ -28,6 +28,7 @@ import com.sequenceiq.cloudbreak.service.secret.SecretValue;
 import com.sequenceiq.cloudbreak.service.secret.domain.Secret;
 import com.sequenceiq.cloudbreak.service.secret.domain.SecretToString;
 import com.sequenceiq.cloudbreak.structuredevent.repository.AccountAwareResource;
+import com.sequenceiq.cloudbreak.workspace.repository.EntityType;
 import com.sequenceiq.common.api.type.CertExpirationState;
 import com.sequenceiq.common.model.FileSystemType;
 import com.sequenceiq.datalake.converter.SdxClusterShapeConverter;
@@ -37,6 +38,7 @@ import com.sequenceiq.sdx.api.model.SdxDatabaseAvailabilityType;
 
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"accountid", "envname"}))
+@EntityType(entityClass = SdxCluster.class)
 public class SdxCluster implements AccountAwareResource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SdxCluster.class);

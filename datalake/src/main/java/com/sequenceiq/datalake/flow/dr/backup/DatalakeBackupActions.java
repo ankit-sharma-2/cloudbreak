@@ -1,23 +1,37 @@
 package com.sequenceiq.datalake.flow.dr.backup;
 
-import static com.sequenceiq.datalake.flow.dr.backup.DatalakeBackupEvent.DATALAKE_DATABASE_BACKUP_FAILURE_HANDLED_EVENT;
+import static com.sequenceiq.cloudbreak.event.ResourceEvent.DATALAKE_DATABASE_BACKUP;
+import static com.sequenceiq.datalake.flow.dr.backup.DatalakeBackupEvent.DATALAKE_BACKUP_FAILED_EVENT;
 import static com.sequenceiq.datalake.flow.dr.backup.DatalakeBackupEvent.DATALAKE_BACKUP_FAILURE_HANDLED_EVENT;
+import static com.sequenceiq.datalake.flow.dr.backup.DatalakeBackupEvent.DATALAKE_DATABASE_BACKUP_FAILURE_HANDLED_EVENT;
 import static com.sequenceiq.datalake.flow.dr.backup.DatalakeBackupEvent.DATALAKE_DATABASE_BACKUP_FINALIZED_EVENT;
 import static com.sequenceiq.datalake.flow.dr.backup.DatalakeBackupEvent.DATALAKE_DATABASE_BACKUP_IN_PROGRESS_EVENT;
-import static com.sequenceiq.datalake.flow.dr.backup.DatalakeBackupEvent.DATALAKE_BACKUP_FAILED_EVENT;
+
+import java.util.Map;
+import java.util.Optional;
+
+import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.statemachine.StateContext;
+import org.springframework.statemachine.action.Action;
 
 import com.sequenceiq.cloudbreak.datalakedr.model.DatalakeDrStatusResponse;
 import com.sequenceiq.cloudbreak.event.ResourceEvent;
 import com.sequenceiq.datalake.entity.DatalakeStatusEnum;
 import com.sequenceiq.datalake.entity.SdxCluster;
 import com.sequenceiq.datalake.entity.operation.SdxOperationStatus;
+import com.sequenceiq.datalake.event.EventSenderService;
 import com.sequenceiq.datalake.flow.SdxContext;
 import com.sequenceiq.datalake.flow.SdxEvent;
+import com.sequenceiq.datalake.flow.dr.backup.event.DatalakeBackupFailedEvent;
+import com.sequenceiq.datalake.flow.dr.backup.event.DatalakeBackupSuccessEvent;
 import com.sequenceiq.datalake.flow.dr.backup.event.DatalakeDatabaseBackupCouldNotStartEvent;
 import com.sequenceiq.datalake.flow.dr.backup.event.DatalakeDatabaseBackupFailedEvent;
-import com.sequenceiq.datalake.flow.dr.backup.event.DatalakeBackupFailedEvent;
 import com.sequenceiq.datalake.flow.dr.backup.event.DatalakeDatabaseBackupStartEvent;
-import com.sequenceiq.datalake.flow.dr.backup.event.DatalakeBackupSuccessEvent;
 import com.sequenceiq.datalake.flow.dr.backup.event.DatalakeDatabaseBackupWaitRequest;
 import com.sequenceiq.datalake.flow.dr.backup.event.DatalakeFullBackupWaitRequest;
 import com.sequenceiq.datalake.flow.dr.backup.event.DatalakeTriggerBackupEvent;
@@ -31,21 +45,8 @@ import com.sequenceiq.flow.core.Flow;
 import com.sequenceiq.flow.core.FlowEvent;
 import com.sequenceiq.flow.core.FlowParameters;
 import com.sequenceiq.flow.core.FlowState;
-
-import java.util.Map;
-import java.util.Optional;
-
-import javax.inject.Inject;
-
 import com.sequenceiq.sdx.api.model.DatalakeDatabaseDrStatus;
 import com.sequenceiq.sdx.api.model.SdxDatabaseBackupStatusResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.statemachine.StateContext;
-import org.springframework.statemachine.action.Action;
 
 @Configuration
 public class DatalakeBackupActions {
@@ -69,6 +70,9 @@ public class DatalakeBackupActions {
 
     @Inject
     private SdxService sdxService;
+
+    @Inject
+    private EventSenderService eventSenderService;
 
     @Bean(name = "DATALAKE_TRIGGERING_BACKUP_STATE")
     public Action<?, ?> triggerDatalakeBackup() {

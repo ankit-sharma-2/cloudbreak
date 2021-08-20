@@ -22,7 +22,7 @@ public class CDPDefaultStructuredEventClient {
     /**
      * Sends the provided Structured Event to all registered {@code CDPStructuredEventSenderService}.
      *
-     * Diverse implementations of {@code CDPStructuredEventSenderService} are used to send events to
+     * Diverse implementations of {@code CDPStructuredEventSenderService} are used to send events to backing services, like DB or Kafka.
      */
     public void sendStructuredEvent(CDPStructuredEvent structuredEvent) {
         for (CDPStructuredEventSenderService structuredEventSenderService : structuredEventServices) {

@@ -30,6 +30,5 @@ Additional information about the event is looked up using the appropriate `Repos
 The regular expression `Pattern` used in the implementation should match the URL pattern defined by the Swagger `*Endpoint` you want to match with.
 e.g: [`FreeipaUrlParser`](freeipa/src/main/java/com/sequenceiq/freeipa/events/FreeipaUrlParser.java) matches on the requests sent to [`FreeIpaV1Endpoint`](freeipa-api/src/main/java/com/sequenceiq/freeipa/api/v1/freeipa/stack/FreeIpaV1Endpoint.java).
 
-
 To make sure that the Repository look up service can find the repository for your Entity, be sure to annotate the repository with `@EntityType(entityClass = YOUR_ENTITY.class)`.
 
