@@ -95,6 +95,7 @@ public class DatalakeBackupActions {
                 LOGGER.info("Triggering datalake backup for {}", payload.getResourceId());
 
                 // we want to create an auditable record that the datalake backup has been started.
+                // todo: Move this to the appropriate DL actions, and replace with the correct operation
                 SdxCluster sdxCluster = sdxService.getById(payload.getResourceId());
                 eventSenderService.sendEventAndNotification(sdxCluster, context.getFlowTriggerUserCrn(), DATALAKE_DATABASE_BACKUP);
 
