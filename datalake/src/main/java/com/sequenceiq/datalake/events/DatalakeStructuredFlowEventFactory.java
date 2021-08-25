@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.sequenceiq.cloudbreak.auth.ThreadBasedUserCrnProvider;
 import com.sequenceiq.cloudbreak.common.service.Clock;
+import com.sequenceiq.cloudbreak.event.ResourceEvent;
 import com.sequenceiq.cloudbreak.structuredevent.event.CloudbreakEventService;
 import com.sequenceiq.cloudbreak.structuredevent.event.FlowDetails;
 import com.sequenceiq.cloudbreak.structuredevent.event.cdp.CDPOperationDetails;
@@ -45,16 +46,27 @@ public class DatalakeStructuredFlowEventFactory implements CDPStructuredFlowEven
     @Override
     public CDPStructuredFlowEvent<SdxClusterDto> createStructuredFlowEvent(Long resourceId, FlowDetails flowDetails, Boolean detailed, Exception exception) {
         SdxCluster sdxCluster = sdxService.getById(resourceId);
-        String resourceType = CloudbreakEventService.DATALAKE_RESOURCE_TYPE;
+        String resourceType = CloudbreakEventService.DATALAKE_RESOURCE_TYPE; // turning this value into an enum will make the builder more useful
 
         // todo: make a CDPOperationDetails Builder
-        CDPOperationDetails operationDetails = new CDPOperationDetails(clock.getCurrentTimeMillis(), FLOW, resourceType, sdxCluster.getId(),
-                sdxCluster.getName(), nodeConfig.getId(), serviceVersion, sdxCluster.getAccountId(), sdxCluster.getResourceCrn(), ThreadBasedUserCrnProvider.getUserCrn(),
-                sdxCluster.getResourceCrn(), null);
+        CDPOperationDetails operationDetails = new CDPOperationDetails();
+        operationDetails.setTimestamp(clock.getCurrentTimeMillis());
+        operationDetails.setEventType(FLOW);
+        operationDetails.setResourceId(resourceId);
+        operationDetails.setResourceName(sdxCluster.getName());
+        operationDetails.setResourceType(resourceType);
+        operationDetails.setCloudbreakId(nodeConfig.getId());
+        operationDetails.setCloudbreakVersion(serviceVersion);
+        operationDetails.setResourceCrn(sdxCluster.getResourceCrn());
+        operationDetails.setUserCrn(ThreadBasedUserCrnProvider.getUserCrn());
+        operationDetails.setAccountId(sdxCluster.getAccountId());
+        operationDetails.setEnvironmentCrn(sdxCluster.getEnvCrn());
+        operationDetails.setResourceEvent(ResourceEvent.DATALAKE_DATABASE_BACKUP.name());
 
         SdxClusterDto sdxClusterDto = sdxClusterDtoConverter.sdxClusterToDto(sdxCluster);
 
         // todo: look up the correct place to provide "cluster status" and "reason for cluster status"
+        // todo: the environment CRN isn't correct here
         CDPStructuredFlowEvent<SdxClusterDto> event = new CDPStructuredFlowEvent<>(operationDetails, flowDetails, sdxClusterDto, "cluster status", "reason for cluster status");
         if (exception != null) {
             event.setException(ExceptionUtils.getStackTrace(exception));
