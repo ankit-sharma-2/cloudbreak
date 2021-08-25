@@ -2,6 +2,8 @@ package com.sequenceiq.datalake.events;
 
 import static com.sequenceiq.cloudbreak.structuredevent.event.StructuredEventType.FLOW;
 
+import java.util.UUID;
+
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -62,11 +64,11 @@ public class DatalakeStructuredFlowEventFactory implements CDPStructuredFlowEven
         operationDetails.setAccountId(sdxCluster.getAccountId());
         operationDetails.setEnvironmentCrn(sdxCluster.getEnvCrn());
         operationDetails.setResourceEvent(ResourceEvent.DATALAKE_DATABASE_BACKUP.name());
+        operationDetails.setUuid(UUID.randomUUID().toString());
 
         SdxClusterDto sdxClusterDto = sdxClusterDtoConverter.sdxClusterToDto(sdxCluster);
 
         // todo: look up the correct place to provide "cluster status" and "reason for cluster status"
-        // todo: the environment CRN isn't correct here
         CDPStructuredFlowEvent<SdxClusterDto> event = new CDPStructuredFlowEvent<>(operationDetails, flowDetails, sdxClusterDto, "cluster status", "reason for cluster status");
         if (exception != null) {
             event.setException(ExceptionUtils.getStackTrace(exception));
