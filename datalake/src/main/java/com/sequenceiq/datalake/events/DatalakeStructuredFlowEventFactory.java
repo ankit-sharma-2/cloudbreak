@@ -19,6 +19,8 @@ import com.sequenceiq.cloudbreak.structuredevent.event.cdp.CDPOperationDetails;
 import com.sequenceiq.cloudbreak.structuredevent.event.cdp.CDPStructuredFlowEvent;
 import com.sequenceiq.cloudbreak.structuredevent.service.CDPStructuredFlowEventFactory;
 import com.sequenceiq.datalake.entity.SdxCluster;
+import com.sequenceiq.datalake.entity.SdxStatusEntity;
+import com.sequenceiq.datalake.repository.SdxStatusRepository;
 import com.sequenceiq.datalake.service.sdx.SdxService;
 import com.sequenceiq.flow.ha.NodeConfig;
 
@@ -36,6 +38,9 @@ public class DatalakeStructuredFlowEventFactory implements CDPStructuredFlowEven
 
     @Inject
     private SdxClusterDtoConverter sdxClusterDtoConverter;
+
+    @Inject
+    private SdxStatusRepository sdxStatusRepository;
 
     @Value("${info.app.version:}")
     private String serviceVersion;
@@ -67,9 +72,8 @@ public class DatalakeStructuredFlowEventFactory implements CDPStructuredFlowEven
         operationDetails.setUuid(UUID.randomUUID().toString());
 
         SdxClusterDto sdxClusterDto = sdxClusterDtoConverter.sdxClusterToDto(sdxCluster);
-
-        // todo: look up the correct place to provide "cluster status" and "reason for cluster status"
-        CDPStructuredFlowEvent<SdxClusterDto> event = new CDPStructuredFlowEvent<>(operationDetails, flowDetails, sdxClusterDto, "cluster status", "reason for cluster status");
+        SdxStatusEntity sdxStatus = sdxStatusRepository.findFirstByDatalakeIsOrderByIdDesc(sdxCluster);
+        CDPStructuredFlowEvent<SdxClusterDto> event = new CDPStructuredFlowEvent<>(operationDetails, flowDetails, sdxClusterDto, sdxStatus.getStatus().name(), sdxStatus.getStatusReason());
         if (exception != null) {
             event.setException(ExceptionUtils.getStackTrace(exception));
         }
