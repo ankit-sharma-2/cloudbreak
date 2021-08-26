@@ -24,6 +24,16 @@ import com.sequenceiq.datalake.repository.SdxStatusRepository;
 import com.sequenceiq.datalake.service.sdx.SdxService;
 import com.sequenceiq.flow.ha.NodeConfig;
 
+/**
+ * This class lets the Datalake module handle Flow Structured Events.
+ *
+ * This class primarily gathers data about an SDX cluster and the state of the CB flow to construct a Structured Flow Event in the
+ * {@code  createStructuredFlowEvent} method.
+ *
+ * This class shows up as a dependency at runtime, rather than during compilation.
+ * We're including the {@literal :structuredevent-service-cdp} module as a dependency, it brings along a {@code CDPFlowStructuredEventHandler}.
+ * The Event Handler has a Spring injected dependency on {@code CDPStructuredFlowEventFactor}, which is the interface of this class.
+ */
 @Component
 public class DatalakeStructuredFlowEventFactory implements CDPStructuredFlowEventFactory {
 
