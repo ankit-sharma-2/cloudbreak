@@ -1,4 +1,4 @@
-package com.sequenceiq.datalake.event;
+package com.sequenceiq.datalake.events;
 
 import static com.sequenceiq.cloudbreak.structuredevent.event.StructuredEventType.NOTIFICATION;
 import static java.lang.String.format;
@@ -21,10 +21,7 @@ import com.sequenceiq.cloudbreak.structuredevent.event.cdp.CDPStructuredNotifica
 import com.sequenceiq.cloudbreak.structuredevent.repository.AccountAwareResource;
 import com.sequenceiq.cloudbreak.structuredevent.service.CDPDefaultStructuredEventClient;
 import com.sequenceiq.datalake.entity.SdxCluster;
-import com.sequenceiq.datalake.events.SdxClusterDto;
-import com.sequenceiq.datalake.events.SdxClusterDtoConverter;
 import com.sequenceiq.flow.ha.NodeConfig;
-
 
 @Service
 public class EventSenderService {

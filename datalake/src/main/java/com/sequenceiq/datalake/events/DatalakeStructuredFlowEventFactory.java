@@ -53,7 +53,22 @@ public class DatalakeStructuredFlowEventFactory implements CDPStructuredFlowEven
     @Override
     public CDPStructuredFlowEvent<SdxClusterDto> createStructuredFlowEvent(Long resourceId, FlowDetails flowDetails, Boolean detailed, Exception exception) {
         SdxCluster sdxCluster = sdxService.getById(resourceId);
-        String resourceType = CloudbreakEventService.DATALAKE_RESOURCE_TYPE; // turning this value into an enum will make the builder more useful
+        CDPOperationDetails operationDetails = makeCdpOperationDetails(resourceId, sdxCluster);
+        SdxClusterDto sdxClusterDto = sdxClusterDtoConverter.sdxClusterToDto(sdxCluster);
+        SdxStatusEntity sdxStatus = sdxStatusRepository.findFirstByDatalakeIsOrderByIdDesc(sdxCluster);
+        String status = sdxStatus.getStatus().name();
+        String statusReason = sdxStatus.getStatusReason();
+        
+        CDPStructuredFlowEvent<SdxClusterDto> event = new CDPStructuredFlowEvent<>(operationDetails, flowDetails, sdxClusterDto, status, statusReason);
+        if (exception != null) {
+            event.setException(ExceptionUtils.getStackTrace(exception));
+        }
+        return event;
+    }
+
+    private CDPOperationDetails makeCdpOperationDetails(Long resourceId, SdxCluster sdxCluster) {
+        // turning the string constants in CloudbreakEventService into a enums would be nice.
+        String resourceType = CloudbreakEventService.DATALAKE_RESOURCE_TYPE;
 
         // todo: make a CDPOperationDetails Builder
         CDPOperationDetails operationDetails = new CDPOperationDetails();
@@ -71,12 +86,6 @@ public class DatalakeStructuredFlowEventFactory implements CDPStructuredFlowEven
         operationDetails.setResourceEvent(ResourceEvent.DATALAKE_DATABASE_BACKUP.name());
         operationDetails.setUuid(UUID.randomUUID().toString());
 
-        SdxClusterDto sdxClusterDto = sdxClusterDtoConverter.sdxClusterToDto(sdxCluster);
-        SdxStatusEntity sdxStatus = sdxStatusRepository.findFirstByDatalakeIsOrderByIdDesc(sdxCluster);
-        CDPStructuredFlowEvent<SdxClusterDto> event = new CDPStructuredFlowEvent<>(operationDetails, flowDetails, sdxClusterDto, sdxStatus.getStatus().name(), sdxStatus.getStatusReason());
-        if (exception != null) {
-            event.setException(ExceptionUtils.getStackTrace(exception));
-        }
-        return event;
+        return operationDetails;
     }
 }

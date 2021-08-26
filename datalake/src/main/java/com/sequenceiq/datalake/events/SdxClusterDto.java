@@ -15,7 +15,6 @@ public class SdxClusterDto implements AccountAwareResource {
 
     private String resourceName;
 
-
     public void setId(Long id) {
         this.id = id;
     }

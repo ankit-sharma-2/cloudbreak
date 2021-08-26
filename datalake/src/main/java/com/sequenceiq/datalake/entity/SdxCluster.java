@@ -62,7 +62,7 @@ public class SdxCluster implements AccountAwareResource {
 
     // make this entity comply with AccountAwareResourceRepository lookup methods
     @NotNull
-    @Column(name = "clusterName", insertable= false, updatable = false)
+    @Column(name = "clusterName", insertable = false, updatable = false)
     private String name;
 
     @NotNull
