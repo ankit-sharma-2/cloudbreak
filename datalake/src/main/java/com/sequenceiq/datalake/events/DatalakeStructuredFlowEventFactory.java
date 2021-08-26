@@ -68,7 +68,6 @@ public class DatalakeStructuredFlowEventFactory implements CDPStructuredFlowEven
         SdxStatusEntity sdxStatus = sdxStatusRepository.findFirstByDatalakeIsOrderByIdDesc(sdxCluster);
         String status = sdxStatus.getStatus().name();
         String statusReason = sdxStatus.getStatusReason();
-        
         CDPStructuredFlowEvent<SdxClusterDto> event = new CDPStructuredFlowEvent<>(operationDetails, flowDetails, sdxClusterDto, status, statusReason);
         if (exception != null) {
             event.setException(ExceptionUtils.getStackTrace(exception));
