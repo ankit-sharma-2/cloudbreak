@@ -88,12 +88,12 @@ public class CDPFlowStructuredEventHandler<S, E> extends StateMachineListenerAda
             String fromId = getFromId(transition);
             String toId = getToId(transition);
             String eventId = getEventId(transition);
-            Boolean isDetailed = toId.equals(initState.toString()) || toId.equals(finalState.toString());
+            Boolean detailed = toId.equals(initState.toString()) || toId.equals(finalState.toString());
 
             Long currentTime = System.currentTimeMillis();
             long duration = lastStateChange == null ? 0L : currentTime - lastStateChange;
 
-            CDPStructuredEvent structuredEvent = buildCdpStructuredEvent(fromId, toId, eventId, isDetailed, duration);
+            CDPStructuredEvent structuredEvent = buildCdpStructuredEvent(fromId, toId, eventId, detailed, duration);
             cdpDefaultStructuredEventClient.sendStructuredEvent(structuredEvent);
 
             lastStateChange = currentTime;
@@ -102,11 +102,11 @@ public class CDPFlowStructuredEventHandler<S, E> extends StateMachineListenerAda
         }
     }
 
-    private CDPStructuredEvent buildCdpStructuredEvent(String fromId, String toId, String eventId, Boolean isDetailed, long duration) {
+    private CDPStructuredEvent buildCdpStructuredEvent(String fromId, String toId, String eventId, Boolean detailed, long duration) {
         FlowDetails flowDetails = new FlowDetails(flowChainType, flowType, flowChainId, flowId, fromId, toId, eventId, duration);
         CDPStructuredEvent structuredEvent;
         if (exception == null) {
-            structuredEvent = cdpStructuredFlowEventFactory.createStructuredFlowEvent(resourceId, flowDetails, isDetailed);
+            structuredEvent = cdpStructuredFlowEventFactory.createStructuredFlowEvent(resourceId, flowDetails, detailed);
         } else {
             structuredEvent = cdpStructuredFlowEventFactory.createStructuredFlowEvent(resourceId, flowDetails, true, exception);
             exception = null;
