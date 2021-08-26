@@ -25,7 +25,6 @@ import com.sequenceiq.flow.ha.NodeConfig;
 
 @Service
 public class EventSenderService {
-    //todo: test this
     private static final Logger LOGGER = LoggerFactory.getLogger(EventSenderService.class);
 
     private final SdxClusterDtoConverter sdxClusterDtoConverter;

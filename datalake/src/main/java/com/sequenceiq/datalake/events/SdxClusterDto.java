@@ -2,7 +2,6 @@ package com.sequenceiq.datalake.events;
 
 import com.sequenceiq.cloudbreak.structuredevent.repository.AccountAwareResource;
 
-// todo: test this
 public class SdxClusterDto implements AccountAwareResource {
 
     private Long id;

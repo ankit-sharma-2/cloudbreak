@@ -7,7 +7,6 @@ import com.sequenceiq.datalake.entity.SdxCluster;
 @Component
 public class SdxClusterDtoConverter {
 
-    // todo: test this
     public SdxClusterDto sdxClusterToDto(SdxCluster sdxCluster) {
         SdxClusterDto sdxClusterDto = new SdxClusterDto();
         sdxClusterDto.setAccountId(sdxCluster.getAccountId());
