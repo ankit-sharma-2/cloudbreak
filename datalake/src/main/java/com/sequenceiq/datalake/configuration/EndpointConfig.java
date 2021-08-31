@@ -15,7 +15,6 @@ import org.springframework.context.annotation.Configuration;
 import com.sequenceiq.authorization.controller.AuthorizationInfoController;
 import com.sequenceiq.authorization.info.AuthorizationUtilEndpoint;
 import com.sequenceiq.cloudbreak.structuredevent.rest.controller.CDPStructuredEventV1Controller;
-import com.sequenceiq.cloudbreak.structuredevent.rest.filter.CDPStructuredEventFilter;
 import com.sequenceiq.datalake.controller.diagnostics.DiagnosticsController;
 import com.sequenceiq.datalake.controller.mapper.DefaultExceptionMapper;
 import com.sequenceiq.datalake.controller.mapper.WebApplicaitonExceptionMapper;
@@ -79,9 +78,10 @@ public class EndpointConfig extends ResourceConfig {
 
     @PostConstruct
     private void init() {
-        if (auditEnabled) {
-            register(CDPStructuredEventFilter.class);
-        }
+        // todo: uncomment me for CB-13786
+//        if (auditEnabled) {
+//            register(CDPStructuredEventFilter.class);
+//        }
         registerEndpoints();
         registerExceptionMappers();
         register(serverTracingDynamicFeature);
