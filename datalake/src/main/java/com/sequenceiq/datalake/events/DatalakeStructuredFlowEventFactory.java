@@ -92,7 +92,6 @@ public class DatalakeStructuredFlowEventFactory implements CDPStructuredFlowEven
         operationDetails.setUserCrn(ThreadBasedUserCrnProvider.getUserCrn());
         operationDetails.setAccountId(sdxCluster.getAccountId());
         operationDetails.setEnvironmentCrn(sdxCluster.getEnvCrn());
-        operationDetails.setResourceEvent(ResourceEvent.DATALAKE_DATABASE_BACKUP.name());
         operationDetails.setUuid(UUID.randomUUID().toString());
 
         return operationDetails;
