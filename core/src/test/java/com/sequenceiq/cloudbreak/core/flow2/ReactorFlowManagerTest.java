@@ -137,6 +137,7 @@ public class ReactorFlowManagerTest {
         underTest.triggerStackLoadBalancerUpdate(STACK_ID);
         underTest.triggerCmSync(STACK_ID, Set.of());
         underTest.triggerDatalakeClusterRecovery(STACK_ID);
+        underTest.triggerRecipesRefresh(STACK_ID, "dummyCrn", false, new HashMap<>(), new HashMap<>());
 
         int count = 0;
         for (Method method : underTest.getClass().getDeclaredMethods()) {

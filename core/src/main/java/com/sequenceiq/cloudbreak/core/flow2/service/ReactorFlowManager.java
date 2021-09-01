@@ -5,6 +5,7 @@ import static com.sequenceiq.cloudbreak.core.flow2.cluster.cmsync.CmSyncEvent.CM
 import static com.sequenceiq.cloudbreak.core.flow2.cluster.config.update.PillarConfigurationUpdateEvent.PILLAR_CONFIG_UPDATE_EVENT;
 import static com.sequenceiq.cloudbreak.core.flow2.cluster.datalake.dr.restore.DatabaseRestoreEvent.DATABASE_RESTORE_EVENT;
 import static com.sequenceiq.cloudbreak.core.flow2.cluster.provision.ClusterCreationEvent.CLUSTER_CREATION_EVENT;
+import static com.sequenceiq.cloudbreak.core.flow2.cluster.recipe.update.event.UpdateRecipesStateSelectors.START_UPDATE_RECIPES_EVENT;
 import static com.sequenceiq.cloudbreak.core.flow2.cluster.salt.update.SaltUpdateEvent.SALT_UPDATE_EVENT;
 import static com.sequenceiq.cloudbreak.core.flow2.cluster.start.ClusterStartEvent.CLUSTER_START_EVENT;
 import static com.sequenceiq.cloudbreak.core.flow2.cluster.sync.ClusterSyncEvent.CLUSTER_SYNC_EVENT;
@@ -36,6 +37,7 @@ import com.sequenceiq.cloudbreak.common.event.Acceptable;
 import com.sequenceiq.cloudbreak.common.type.ScalingType;
 import com.sequenceiq.cloudbreak.core.flow2.chain.FlowChainTriggers;
 import com.sequenceiq.cloudbreak.core.flow2.cluster.datalake.EphemeralClusterEvent;
+import com.sequenceiq.cloudbreak.core.flow2.cluster.recipe.update.event.UpdateRecipesEvent;
 import com.sequenceiq.cloudbreak.core.flow2.event.ClusterAndStackDownscaleTriggerEvent;
 import com.sequenceiq.cloudbreak.core.flow2.event.ClusterCertificatesRotationTriggerEvent;
 import com.sequenceiq.cloudbreak.core.flow2.event.ClusterCredentialChangeTriggerEvent;
@@ -291,6 +293,13 @@ public class ReactorFlowManager {
     public FlowIdentifier triggerSaltUpdate(Long stackId) {
         String selector = SALT_UPDATE_EVENT.event();
         return reactorNotifier.notify(stackId, selector, new StackEvent(selector, stackId));
+    }
+
+    public FlowIdentifier triggerRecipesRefresh(Long stackId, String stackCrn, boolean refreshClusterOnly,
+            Map<String, Set<String>> recipesToAttach, Map<String, Set<String>> recipesToDetach) {
+        String selector = START_UPDATE_RECIPES_EVENT.event();
+        return reactorNotifier.notify(stackId, selector, new UpdateRecipesEvent(selector, stackId, stackCrn,
+                refreshClusterOnly, recipesToAttach, recipesToDetach));
     }
 
     public FlowIdentifier triggerPillarConfigurationUpdate(Long stackId) {

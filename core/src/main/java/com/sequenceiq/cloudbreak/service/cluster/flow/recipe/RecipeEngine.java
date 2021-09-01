@@ -4,6 +4,7 @@ import static com.sequenceiq.cloudbreak.common.model.recipe.RecipeType.POST_CLOU
 import static com.sequenceiq.cloudbreak.common.model.recipe.RecipeType.PRE_CLOUDERA_MANAGER_START;
 import static com.sequenceiq.cloudbreak.common.model.recipe.RecipeType.PRE_TERMINATION;
 import static com.sequenceiq.cloudbreak.util.Benchmark.checkedMeasure;
+import static com.sequenceiq.cloudbreak.util.Benchmark.measure;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -21,6 +22,9 @@ import com.sequenceiq.cloudbreak.domain.stack.Stack;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.host.HostGroup;
 import com.sequenceiq.cloudbreak.ldap.LdapConfigService;
 import com.sequenceiq.cloudbreak.service.CloudbreakException;
+import com.sequenceiq.cloudbreak.service.hostgroup.HostGroupService;
+import com.sequenceiq.cloudbreak.service.resource.ResourceService;
+import com.sequenceiq.cloudbreak.service.stack.StackService;
 import com.sequenceiq.common.api.type.InstanceGroupType;
 
 @Component
@@ -34,7 +38,28 @@ public class RecipeEngine {
     @Inject
     private LdapConfigService ldapConfigService;
 
-    public void uploadRecipes(Stack stack, Set<HostGroup> hostGroups) throws CloudbreakException {
+    @Inject
+    private StackService stackService;
+
+    @Inject
+    private HostGroupService hostGroupService;
+
+    @Inject
+    private ResourceService resourceService;
+
+    public void uploadRecipes(Long stackId, String caller) throws CloudbreakException {
+        LOGGER.info("Upload recipes started for {} stack", stackId);
+        Stack stack = measure(() -> stackService.getByIdWithListsInTransaction(stackId), LOGGER,
+                "stackService.getByIdWithListsInTransaction() took {} ms in {}", caller);
+        stack.setResources(measure(() -> resourceService.getNotInstanceRelatedByStackId(stackId), LOGGER,
+                "resourceService.getNotInstanceRelatedByStackId() took {} ms in {}", caller));
+        Set<HostGroup> hostGroups = measure(() -> hostGroupService.getByClusterWithRecipes(stack.getCluster().getId()), LOGGER,
+                "hostGroupService.getByClusterWithRecipes() took {} ms in {}", caller);
+        uploadRecipesOnHostGroups(stack, hostGroups);
+        LOGGER.info("Upload recipes finished successfully for {} stack by {}", stackId, caller);
+    }
+
+    private void uploadRecipesOnHostGroups(Stack stack, Set<HostGroup> hostGroups) throws CloudbreakException {
         boolean recipesFound = recipesFound(hostGroups);
         if (recipesFound) {
             checkedMeasure(() -> orchestratorRecipeExecutor.uploadRecipes(stack, hostGroups), LOGGER, "Upload recipes took {} ms");
