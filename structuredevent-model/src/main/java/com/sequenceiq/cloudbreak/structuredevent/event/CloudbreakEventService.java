@@ -9,8 +9,6 @@ import org.springframework.data.domain.Pageable;
 import com.sequenceiq.cloudbreak.event.ResourceEvent;
 
 public interface CloudbreakEventService {
-    // todo: make an enum instead of string constants
-
     String DATAHUB_RESOURCE_TYPE = "datahub";
 
     String DATALAKE_RESOURCE_TYPE = "datalake";
