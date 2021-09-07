@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 
 import com.sequenceiq.cloudbreak.auth.ThreadBasedUserCrnProvider;
 import com.sequenceiq.cloudbreak.common.service.Clock;
-import com.sequenceiq.cloudbreak.event.ResourceEvent;
 import com.sequenceiq.cloudbreak.structuredevent.event.CloudbreakEventService;
 import com.sequenceiq.cloudbreak.structuredevent.event.FlowDetails;
 import com.sequenceiq.cloudbreak.structuredevent.event.cdp.CDPOperationDetails;
@@ -26,10 +25,10 @@ import com.sequenceiq.flow.ha.NodeConfig;
 
 /**
  * This class lets the Datalake module handle Flow Structured Events.
- *
+ * <p>
  * This class primarily gathers data about an SDX cluster and the state of the CB flow to construct a Structured Flow Event in the
  * {@code  createStructuredFlowEvent} method.
- *
+ * <p>
  * This class shows up as a dependency at runtime, rather than during compilation.
  * We're including the {@literal :structuredevent-service-cdp} module as a dependency, it brings along a {@code CDPFlowStructuredEventHandler}.
  * The Event Handler has a Spring injected dependency on {@code CDPStructuredFlowEventFactor}, which is the interface of this class.
