@@ -74,7 +74,7 @@ class DatalakeRecoverySetupNewInstancesHandlerTest {
 
         when(stackService.getByIdWithClusterInTransaction(STACK_ID)).thenReturn(stack);
         when(stackCreatorService.sortInstanceGroups(stack)).thenReturn(instanceGroups);
-        when(stackUpscaleService.buildNewInstances(eq(stack), any(), eq(0))).thenReturn(cloudInstances);
+//        when(stackUpscaleService.buildNewInstances(eq(stack), any(), eq(0))).thenReturn(cloudInstances);
 
         Selectable nextFlowStepSelector = underTest.doAccept(getHandlerEvent());
 
@@ -82,8 +82,8 @@ class DatalakeRecoverySetupNewInstancesHandlerTest {
         verify(stackService).getByIdWithClusterInTransaction(STACK_ID);
         verify(clusterService).updateClusterStatusByStackId(STACK_ID, Status.REQUESTED);
         verify(stackCreatorService).sortInstanceGroups(stack);
-        verify(stackUpscaleService, times(2)).buildNewInstances(eq(stack), any(), eq(0));
-        verify(instanceMetaDataService, times(2)).saveInstanceAndGetUpdatedStack(eq(stack), any(), eq(true), eq(Collections.emptySet()), eq(false));
+//        verify(stackUpscaleService, times(2)).buildNewInstances(eq(stack), any(), eq(0));
+        verify(instanceMetaDataService, times(2)).saveInstanceAndGetUpdatedStack(eq(stack), any(), any(), eq(true), eq(Collections.emptySet()), eq(false));
     }
 
     @Test

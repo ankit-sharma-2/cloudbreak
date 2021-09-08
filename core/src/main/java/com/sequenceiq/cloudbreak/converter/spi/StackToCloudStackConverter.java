@@ -31,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.sequenceiq.cloudbreak.auth.ThreadBasedUserCrnProvider;
 import com.sequenceiq.cloudbreak.cloud.model.CloudInstance;
@@ -212,32 +211,13 @@ public class StackToCloudStackConverter {
 
         Map<String, Object> parameters = buildCloudInstanceParameters(
                 environment, instanceMetaData, CloudPlatform.valueOf(stack.getCloudPlatform()));
-        CloudInstance cloudInstance = new CloudInstance(
+        return new CloudInstance(
                 id,
                 instanceTemplate,
                 instanceAuthentication,
                 instanceMetaData == null ? null : instanceMetaData.getSubnetId(),
                 instanceMetaData == null ? null : instanceMetaData.getAvailabilityZone(),
                 parameters);
-        if (instanceMetaData == null) {
-            prepareCloudInstanceSubnetAndAvailabilityZone(environment, instanceGroup, cloudInstance, stack);
-        }
-        return cloudInstance;
-    }
-
-    private void prepareCloudInstanceSubnetAndAvailabilityZone(DetailedEnvironmentResponse environment, InstanceGroup instanceGroup,
-            CloudInstance cloudInstance, Stack stack) {
-        Map<String, String> subnetAzPairs = multiAzCalculatorService.prepareSubnetAzMap(environment);
-        multiAzCalculatorService.calculateByRoundRobin(
-                subnetAzPairs,
-                instanceGroup,
-                cloudInstance
-        );
-        if (Strings.isNullOrEmpty(cloudInstance.getSubnetId()) && Strings.isNullOrEmpty(cloudInstance.getAvailabilityZone())) {
-            String stackSubnetId = getStackSubnetIdIfExists(stack);
-            cloudInstance.setSubnetId(stackSubnetId);
-            cloudInstance.setAvailabilityZone(stackSubnetId == null ? null : subnetAzPairs.get(stackSubnetId));
-        }
     }
 
     private String getStackSubnetIdIfExists(Stack stack) {
