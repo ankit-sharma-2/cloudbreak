@@ -75,7 +75,7 @@ public class ExperiencesByLiftie implements Experience {
     @Override
     @NotNull
     public Map<String, String> collectPolicy(EnvironmentExperienceDto environment) {
-        String key = "Kubernetes cluster manager";
+        String key = "liftie";
         Map<String, String> result = new LinkedHashMap<>();
         try {
             ExperiencePolicyResponse fetchedPolicies = liftieApi.getPolicy(environment.getCloudPlatform());

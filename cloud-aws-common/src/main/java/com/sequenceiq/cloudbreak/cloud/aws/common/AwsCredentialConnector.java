@@ -29,8 +29,8 @@ import com.sequenceiq.cloudbreak.cloud.aws.common.view.AwsCredentialViewProvider
 import com.sequenceiq.cloudbreak.cloud.context.AuthenticatedContext;
 import com.sequenceiq.cloudbreak.cloud.context.CloudContext;
 import com.sequenceiq.cloudbreak.cloud.model.CDPServicePolicyVerificationResponse;
-import com.sequenceiq.cloudbreak.cloud.model.CloudCredential;
 import com.sequenceiq.cloudbreak.cloud.model.CDPServicePolicyVerificationResponses;
+import com.sequenceiq.cloudbreak.cloud.model.CloudCredential;
 import com.sequenceiq.cloudbreak.cloud.model.CloudCredentialStatus;
 import com.sequenceiq.cloudbreak.cloud.model.CredentialStatus;
 import com.sequenceiq.cloudbreak.cloud.model.credential.CredentialVerificationContext;
@@ -158,10 +158,11 @@ public class AwsCredentialConnector implements CredentialConnector {
         AwsCredentialView awsCredential = credentialViewProvider.createAwsCredentialView(cloudCredential);
         CDPServicePolicyVerificationResponses credentialStatus;
         Map<String, String> servicesWithPolicies = new HashMap<>();
-        services.forEach(service -> {
-            String policy = experiencePrerequisites.get(service.toUpperCase());
-            servicesWithPolicies.put(service, policy);
-        });
+        services.forEach(service -> experiencePrerequisites.keySet()
+                .stream()
+                .filter(s -> s.equalsIgnoreCase(service))
+                .findFirst()
+                .ifPresent(policyKey -> servicesWithPolicies.put(service, experiencePrerequisites.get(policyKey))));
         try {
             credentialClient.retrieveSessionCredentials(awsCredential);
             credentialStatus = verifyCredentialsPermission(awsCredential, servicesWithPolicies);
